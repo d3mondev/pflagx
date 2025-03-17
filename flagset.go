@@ -98,7 +98,7 @@ func (s *FlagSet) ToString() string {
 			}
 
 			// Default value
-			if f.DefValue != "" {
+			if shouldPrintDefault(f) {
 				quotes := false
 				switch f.Value.Type() {
 				case "string":
@@ -158,4 +158,23 @@ func (fs *FlagSet) setPadding(maxNameLen int) {
 	padding += maxNameLen     // Name length
 	padding += fs.Padding     // Padding between the name and the usage
 	fs.padding = padding
+}
+
+// shouldPrintDefault returns whether the default value for a flag should
+// appear in its usage string.
+func shouldPrintDefault(f *pflag.Flag) bool {
+	switch f.Value.Type() {
+	case "bool":
+		return f.DefValue == "true"
+	case "stringSlice":
+		fallthrough
+	case "intSlice":
+		fallthrough
+	case "uintSlice":
+		fallthrough
+	case "boolSlice":
+		return f.DefValue != "[]"
+	default:
+		return f.DefValue != ""
+	}
 }

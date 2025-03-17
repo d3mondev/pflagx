@@ -48,7 +48,7 @@ filter        Optional pattern to filter files (e.g., "*.txt")`
 	advancedFlags.Duration("timeout", 0, "Operation timeout (0 for no timeout)")
 	advancedFlags.Int("retry", 3, "Number of retry attempts")
 	advancedFlags.Float64("factor", 1.5, "Exponential backoff factor")
-	advancedFlags.StringSlice("tags", []string{}, "List of tags to apply")
+	advancedFlags.StringSlice("tags", nil, "List of tags to apply")
 	advancedFlags.Footer = "The previous flags are sorted alphabetically."
 
 	debugFlags := cmd.NewFlagSet("Debug")
