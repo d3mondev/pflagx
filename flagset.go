@@ -29,8 +29,8 @@ type FlagSet struct {
 	// SortFlags determines if flags should be sorted alphabetically.
 	SortFlags bool
 
-	// padding is the computed total padding for aligning usage text.
-	padding int
+	// computedPadding is the total padding for aligning usage text.
+	computedPadding int
 }
 
 // ToString returns the formatted string representation of the FlagSet,
@@ -62,8 +62,9 @@ func (s *FlagSet) ToString() string {
 			return
 		}
 
-		// Indentation
 		flagBuilder := strings.Builder{}
+
+		// Indentation
 		flagBuilder.WriteString(indentation)
 
 		// Shorthand flag
@@ -80,7 +81,7 @@ func (s *FlagSet) ToString() string {
 		flagBuilder.WriteString(f.Name)
 
 		// Padding between flag name and usage
-		repeat := max(s.padding-flagBuilder.Len(), 0)
+		repeat := max(s.computedPadding-flagBuilder.Len(), 0)
 		flagBuilder.WriteString(strings.Repeat(" ", repeat))
 
 		// Usage
@@ -89,7 +90,7 @@ func (s *FlagSet) ToString() string {
 			for line := range strings.SplitSeq(f.Usage, "\n") {
 				if addPadding {
 					flagBuilder.WriteByte('\n')
-					flagBuilder.WriteString(strings.Repeat(" ", s.padding))
+					flagBuilder.WriteString(strings.Repeat(" ", s.computedPadding))
 				}
 				flagBuilder.WriteString(line)
 				addPadding = true
@@ -140,16 +141,16 @@ func (s *FlagSet) maxNameLength() int {
 	return maxLen
 }
 
-// setPadding computes and sets the total padding needed to align usage text.
-// The padding is calculated as: indentation + shorthand flag space +
-// double slash + maximum name length + extra padding.
-func (fs *FlagSet) setPadding(maxNameLen int) {
+// computePadding computes and sets the total padding needed to align usage text.
+// The padding is calculated as: indentation + shorthand flag +
+// double dash + maximum name length + extra padding.
+func (fs *FlagSet) computePadding(maxNameLen int) {
 	padding := fs.Indentation // Length of the indentation
 	padding += 4              // Shorthand flag "-a, "
-	padding += 2              // Double slash of the flag name
+	padding += 2              // Double dash of the flag name
 	padding += maxNameLen     // Name length
 	padding += fs.Padding     // Padding between the name and the usage
-	fs.padding = padding
+	fs.computedPadding = padding
 }
 
 // writePrefixedLines writes the string s to the StringBuilder, adding the prefix string

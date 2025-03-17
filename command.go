@@ -23,14 +23,14 @@ const (
 	// alphabetically by default in help output.
 	DefaultSortFlags = false
 
-	// DefaultAlignUsagePerSection determines whether usage text
-	// alignment is calculated per section (true) or globally (false)
+	// DefaultAlignUsagePerFlagSet determines whether usage text
+	// alignment is calculated per FlagSet (true) or globally (false)
 	// by default.
-	DefaultAlignUsagePerSection = false
+	DefaultAlignUsagePerFlagSet = false
 )
 
-// CommandLine manages multiple FlagSets and provides unified parsing and help output.
-type CommandLine struct {
+// Command manages multiple FlagSets and provides unified parsing and help output.
+type Command struct {
 	// Name is the program name shown in help output.
 	Name string
 
@@ -40,9 +40,9 @@ type CommandLine struct {
 	// Description appears at the top of help output.
 	Description string
 
-	// AlignUsagePerSection determines if usage text alignment is calculated
-	// per section (true) or globally across all sections (false).
-	AlignUsagePerSection bool
+	// AlignUsagePerFlagSet determines if usage text alignment is calculated
+	// per FlagSet  (true) or globally across all FlagSets (false).
+	AlignUsagePerFlagSet bool
 
 	// Indentation is the number of spaces to indent flag groups.
 	Indentation int
@@ -60,10 +60,10 @@ type CommandLine struct {
 	flagSets []*FlagSet
 }
 
-// New creates a new CommandLine with default settings.
-func New() *CommandLine {
-	cmd := &CommandLine{
-		AlignUsagePerSection: DefaultAlignUsagePerSection,
+// New creates a new Command with default settings.
+func New() *Command {
+	cmd := &Command{
+		AlignUsagePerFlagSet: DefaultAlignUsagePerFlagSet,
 		Indentation:          DefaultIndentation,
 		Padding:              DefaultPadding,
 		SortFlags:            DefaultSortFlags,
@@ -76,8 +76,8 @@ func New() *CommandLine {
 	return cmd
 }
 
-// NewFlagSet creates a new FlagSet group with the given name and adds it to the CommandLine.
-func (cmd *CommandLine) NewFlagSet(name string) *FlagSet {
+// NewFlagSet creates a new FlagSet group with the given name and adds it to the Command.
+func (cmd *Command) NewFlagSet(name string) *FlagSet {
 	fs := &FlagSet{
 		FlagSet: pflag.NewFlagSet(name, pflag.ContinueOnError),
 
@@ -95,7 +95,7 @@ func (cmd *CommandLine) NewFlagSet(name string) *FlagSet {
 
 // Parse processes command line arguments according to the defined flags.
 // It returns an error if flag parsing fails.
-func (cmd *CommandLine) Parse() error {
+func (cmd *Command) Parse() error {
 	pflag.CommandLine = pflag.NewFlagSet("", pflag.ContinueOnError)
 	pflag.Usage = cmd.Usage
 
@@ -114,22 +114,22 @@ func (cmd *CommandLine) Parse() error {
 }
 
 // NArg returns the number of arguments remaining after flags have been processed.
-func (cmd *CommandLine) NArg() int {
+func (cmd *Command) NArg() int {
 	return pflag.CommandLine.NArg()
 }
 
 // Arg returns the nth argument remaining after flags have been processed.
-func (cmd *CommandLine) Arg(n int) string {
+func (cmd *Command) Arg(n int) string {
 	return pflag.CommandLine.Arg(n)
 }
 
 // Args returns the non-flag positional arguments.
-func (cmd *CommandLine) Args() []string {
+func (cmd *Command) Args() []string {
 	return pflag.CommandLine.Args()
 }
 
 // Usage prints formatted help text to the configured Writer.
-func (cmd *CommandLine) Usage() {
+func (cmd *Command) Usage() {
 	var n int
 	w := bufio.NewWriter(cmd.Writer)
 
@@ -155,29 +155,29 @@ func (cmd *CommandLine) Usage() {
 		n += writeByte(w, '\n')
 	}
 
-	// Calculate the length of the longest flag name in all the sections
+	// Calculate the length of the longest flag name in all the FlagSets
 	var maxNameLen int
 	for _, fs := range cmd.flagSets {
 		maxNameLen = max(maxNameLen, fs.maxNameLength())
 	}
 
 	for _, fs := range cmd.flagSets {
-		// Calculate the length of the longest flag name in the current section
-		sectionMaxNameLen := fs.maxNameLength()
+		// Calculate the length of the longest flag name in the current FlagSet
+		fsMaxNameLen := fs.maxNameLength()
 
-		// Skip the section if there is nothing to output.
-		if sectionMaxNameLen == 0 && fs.Description == "" && fs.Footer == "" {
+		// Skip the FlagSet if there is nothing to output.
+		if fsMaxNameLen == 0 && fs.Description == "" && fs.Footer == "" {
 			continue
 		}
 
-		if cmd.AlignUsagePerSection {
-			maxNameLen = sectionMaxNameLen
+		if cmd.AlignUsagePerFlagSet {
+			maxNameLen = fsMaxNameLen
 		}
 
 		// Apply the proper padding
-		fs.setPadding(maxNameLen)
+		fs.computePadding(maxNameLen)
 
-		// Write the section
+		// Write the FlagSet
 		if n != 0 {
 			n += writeByte(w, '\n')
 		}
