@@ -51,9 +51,7 @@ func (s *FlagSet) ToString() string {
 
 	// Description of the FlagSet
 	if s.Description != "" {
-		sb.WriteString(indentation)
-		sb.WriteString(s.Description)
-		sb.WriteByte('\n')
+		writeWithPrefix(&sb, s.Description, indentation)
 	}
 
 	// Parse all the flags
@@ -124,13 +122,7 @@ func (s *FlagSet) ToString() string {
 
 	// Footer
 	if s.Footer != "" {
-		// Indent each line of text
-		lines := strings.SplitSeq(s.Footer, "\n")
-		for line := range lines {
-			sb.WriteString(indentation)
-			sb.WriteString(line)
-			sb.WriteByte('\n')
-		}
+		writeWithPrefix(&sb, s.Footer, indentation)
 	}
 
 	return sb.String()
@@ -158,6 +150,18 @@ func (fs *FlagSet) setPadding(maxNameLen int) {
 	padding += maxNameLen     // Name length
 	padding += fs.Padding     // Padding between the name and the usage
 	fs.padding = padding
+}
+
+// writePrefixedLines writes the string s to the StringBuilder, adding the prefix string
+// to the start of each line. A newline is appended after each line, including the last one.
+func writeWithPrefix(sb *strings.Builder, s string, prefix string) {
+	// Indent each line of text
+	lines := strings.SplitSeq(s, "\n")
+	for line := range lines {
+		sb.WriteString(prefix)
+		sb.WriteString(line)
+		sb.WriteByte('\n')
+	}
 }
 
 // shouldPrintDefault returns whether the default value for a flag should
