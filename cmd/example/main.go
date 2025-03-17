@@ -27,7 +27,7 @@ filter        Optional pattern to filter files (e.g., "*.txt")`
 	generalFlags.Description = "This is a description for the General Options group."
 	verbose := generalFlags.BoolP("verbose", "v", false, "Enable verbose output")
 	config := generalFlags.StringP("config", "c", "", "Path to configuration file")
-	generalFlags.Bool("dry-run", false, "Perform a trial run with no changes made")
+	generalFlags.Bool("dry-run", false, "Perform a trial run with no changes made.\nThis flag's usage appear on multiple lines\nin order to show what the indentation looks like")
 
 	databaseFlags := cmd.NewFlagSet("Database Options")
 	dbHost := databaseFlags.String("db-host", "localhost", "Database server hostname")
