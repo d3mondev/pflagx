@@ -43,6 +43,10 @@ func main() {
 	advancedFlags.StringSlice("tags", []string{}, "List of tags to apply")
 	advancedFlags.Footer = "The previous flags are sorted alphabetically."
 
+	debugFlags := cmd.NewFlagSet("Debug")
+	debugFlags.Bool("trace", false, "Enable tracing")
+	debugFlags.Lookup("trace").Hidden = true
+
 	exampleFlags := cmd.NewFlagSet("Examples")
 	exampleFlags.Footer = `# Basic usage with verbose mode
 myapp --verbose

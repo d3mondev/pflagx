@@ -59,6 +59,12 @@ func (s *FlagSet) ToString() string {
 	// Parse all the flags
 	s.FlagSet.SortFlags = s.SortFlags
 	s.FlagSet.VisitAll(func(f *pflag.Flag) {
+		// Skip flags that are hidden
+		if f.Hidden {
+			return
+		}
+
+		// Indentation
 		flagBuilder := strings.Builder{}
 		flagBuilder.WriteString(indentation)
 
@@ -134,6 +140,9 @@ func (s *FlagSet) ToString() string {
 func (s *FlagSet) maxNameLength() int {
 	maxLen := 0
 	s.FlagSet.VisitAll(func(f *pflag.Flag) {
+		if f.Hidden {
+			return
+		}
 		maxLen = max(maxLen, len(f.Name))
 	})
 	return maxLen

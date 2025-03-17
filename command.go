@@ -148,8 +148,15 @@ func (cmd *CommandLine) Usage() {
 
 	for _, fs := range cmd.flagSets {
 		// Calculate the length of the longest flag name in the current section
+		sectionMaxNameLen := fs.maxNameLength()
+
+		// Skip the section if there is nothing to output.
+		if sectionMaxNameLen == 0 && fs.Description == "" && fs.Footer == "" {
+			continue
+		}
+
 		if cmd.AlignUsagePerSection {
-			maxNameLen = fs.maxNameLength()
+			maxNameLen = sectionMaxNameLen
 		}
 
 		// Apply the proper padding
