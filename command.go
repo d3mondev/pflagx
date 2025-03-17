@@ -96,14 +96,14 @@ func (cmd *CommandLine) NewFlagSet(name string) *FlagSet {
 // Parse processes command line arguments according to the defined flags.
 // It returns an error if flag parsing fails.
 func (cmd *CommandLine) Parse() error {
-	flagSet := pflag.NewFlagSet("", pflag.ContinueOnError)
-	flagSet.Usage = cmd.Usage
+	pflag.CommandLine = pflag.NewFlagSet("", pflag.ContinueOnError)
+	pflag.Usage = cmd.Usage
 
 	for _, fs := range cmd.flagSets {
-		flagSet.AddFlagSet(fs.FlagSet)
+		pflag.CommandLine.AddFlagSet(fs.FlagSet)
 	}
 
-	if err := flagSet.Parse(os.Args[1:]); err != nil {
+	if err := pflag.CommandLine.Parse(os.Args[1:]); err != nil {
 		if errors.Is(err, pflag.ErrHelp) {
 			os.Exit(0)
 		}
@@ -111,6 +111,21 @@ func (cmd *CommandLine) Parse() error {
 	}
 
 	return nil
+}
+
+// NArg returns the number of arguments remaining after flags have been processed.
+func (cmd *CommandLine) NArg() int {
+	return pflag.CommandLine.NArg()
+}
+
+// Arg returns the nth argument remaining after flags have been processed.
+func (cmd *CommandLine) Arg(n int) string {
+	return pflag.CommandLine.Arg(n)
+}
+
+// Args returns the non-flag positional arguments.
+func (cmd *CommandLine) Args() []string {
+	return pflag.CommandLine.Args()
 }
 
 // Usage prints formatted help text to the configured Writer.

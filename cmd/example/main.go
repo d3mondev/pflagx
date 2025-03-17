@@ -14,6 +14,14 @@ func main() {
 	cmd.Version = "v1.0.0"
 	cmd.Description = "A demonstration of the pflagx package capabilities.\nThis program shows how to organize flags into logical groups."
 
+	// Define usage for positional arguments
+	usageFlags := cmd.NewFlagSet("Usage")
+	usageFlags.Description = `myapp [flags] <source> <destination> [filter]
+
+source        Source directory or file
+destination   Destination directory or file
+filter        Optional pattern to filter files (e.g., "*.txt")`
+
 	// Create different flag groups
 	generalFlags := cmd.NewFlagSet("General Options")
 	generalFlags.Description = "This is a description for the General Options group."
@@ -48,25 +56,50 @@ func main() {
 	debugFlags.Lookup("trace").Hidden = true
 
 	exampleFlags := cmd.NewFlagSet("Examples")
-	exampleFlags.Footer = `# Basic usage with verbose mode
-myapp --verbose
+	exampleFlags.Footer = `# Basic usage with source and destination
+myapp /path/to/source /path/to/dest
+
+# Using filter with verbose mode
+myapp --verbose /source /dest "*.txt"
 
 # Specifying database connection parameters
-myapp --db-host db.example.com --db-port 3306 --db-user admin --db-password secret --db-ssl
+myapp --db-host db.example.com --db-port 3306 --db-user admin --db-password secret --db-ssl /source /dest
 
 # Using output options with tags
-myapp -f json -o output.json --tags frontend,backend,testing
+myapp -f json -o output.json --tags frontend,backend,testing /source /dest
 
 # Dry run with advanced options
-myapp --dry-run --timeout 30s --retry 5 --factor 2.0
+myapp --dry-run --timeout 30s --retry 5 --factor 2.0 /source /dest
 
 # Using a configuration file
-myapp -c /etc/myapp/config.yaml`
+myapp -c /etc/myapp/config.yaml /source /dest "*.dat"`
 
 	// Parse command line arguments
 	if err := cmd.Parse(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Validate number of arguments
+	if cmd.NArg() < 2 || cmd.NArg() > 3 {
+		fmt.Fprintf(os.Stderr, "Error: invalid number of arguments\n")
+		cmd.Usage()
+		os.Exit(1)
+	}
+
+	// Get positional arguments
+	source := cmd.Arg(0)
+	destination := cmd.Arg(1)
+	filter := ""
+	if cmd.NArg() > 2 {
+		filter = cmd.Arg(2)
+	}
+
+	// Print positional arguments
+	fmt.Printf("Source: %s\n", source)
+	fmt.Printf("Destination: %s\n", destination)
+	if filter != "" {
+		fmt.Printf("Filter: %s\n", filter)
 	}
 
 	// Example of using the parsed flags
